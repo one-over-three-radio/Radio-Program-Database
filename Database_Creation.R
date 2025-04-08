@@ -54,7 +54,7 @@ generate_combinations <- function(aesthetics) {
   # Remove invalid combinations (e.g., "Barnburner" with "Americana", "Country", or "Folk")
   combos_df <- combos_df %>%
     filter(!(str_detect(Aesthetics, "Barnburner") & 
-             str_detect(Aesthetics, "Americana|Country|Folk")))
+               str_detect(Aesthetics, "Americana|Country|Folk")))
   return(combos_df)
 }
 
@@ -82,7 +82,7 @@ extend_with_times <- function(voting_options, time_combos) {
   return(combinations_df$Combined)
 }
 
-Voting_Options_vibe <- extend_with_times(time_combinations)
+Voting_Options_vibe <- extend_with_times(Voting_Options, time_combinations)
 Voting_Options_Vibe <- data.frame(Voting_Options_vibe)
 
 
@@ -353,7 +353,7 @@ for (j in seq_along(aesthetics_lists)) {
       formatted_date <- format(Sys.Date(), "%d-%m-%Y")
       
       # Calculate weeks difference
-      weeks_difference <- as.numeric(difftime(formatted_date, dmy(row$Last_Voted), units = "weeks"))
+      weeks_difference <- as.numeric(difftime(Sys.Date(), dmy(row$Last_Voted), units = "weeks"))
       
       # Multiplier logic
       multiplier <- get_multiplier(row$Episode, weeks_difference)
@@ -374,24 +374,18 @@ Voting_Elements$Value_Score <- temp_scores
 
 # Output the updated Voting_Elements
 print(Voting_Elements)
-  
+
 
 
 # Add Score column to Voting_Options
 Voting_Options <- Voting_Options %>%
   rowwise() %>%
   mutate(Score = {
-    # Find matching elements
-    matching_elements <- Voting_Elements %>%
-      filter(str_detect(Aesthetics, fixed(Elements, ignore_case = TRUE)))
-    
-    # Calculate the average value score if matches are found
-    if (nrow(matching_elements) > 0) {
-      mean(matching_elements$Value_Score)
-    } else {
-      NA_real_
-    }
+    split_tags <- str_split(Aesthetics, "/")[[1]]
+    matches <- Voting_Elements %>% filter(Elements %in% split_tags)
+    if (nrow(matches) > 0) mean(matches$Value_Score) else NA_real_
   })
+
 
 
 # Add the Final_Score column with conditional logic
@@ -536,16 +530,9 @@ print(Voting_Options_Afternoon_Evening)
 Voting_Options_Afternoon_Evening <- Voting_Options_Afternoon_Evening %>%
   rowwise() %>%
   mutate(Score = {
-    # Find matching elements
-    matching_elements <- Voting_Elements %>%
-      filter(str_detect(Aesthetics, fixed(Elements, ignore_case = TRUE)))
-    
-    # Calculate the average value score if matches are found
-    if (nrow(matching_elements) > 0) {
-      mean(matching_elements$Value_Score)
-    } else {
-      NA_real_
-    }
+    split_tags <- str_split(Aesthetics, "/")[[1]]
+    matches <- Voting_Elements %>% filter(Elements %in% split_tags)
+    if (nrow(matches) > 0) mean(matches$Value_Score) else NA_real_
   })
 
 # Add Final_Score column using Can_Artist
@@ -693,16 +680,9 @@ print(Voting_Options_Evening_Night)
 Voting_Options_Evening_Night <- Voting_Options_Evening_Night %>%
   rowwise() %>%
   mutate(Score = {
-    # Find matching elements
-    matching_elements <- Voting_Elements %>%
-      filter(str_detect(Aesthetics, fixed(Elements, ignore_case = TRUE)))
-    
-    # Calculate the average value score if matches are found
-    if (nrow(matching_elements) > 0) {
-      mean(matching_elements$Value_Score)
-    } else {
-      NA_real_
-    }
+    split_tags <- str_split(Aesthetics, "/")[[1]]
+    matches <- Voting_Elements %>% filter(Elements %in% split_tags)
+    if (nrow(matches) > 0) mean(matches$Value_Score) else NA_real_
   })
 
 # Add Final_Score column using Can_Artist
@@ -844,16 +824,9 @@ print(Voting_Options_Afternoon_Night)
 Voting_Options_Afternoon_Night <- Voting_Options_Afternoon_Night %>%
   rowwise() %>%
   mutate(Score = {
-    # Find matching elements
-    matching_elements <- Voting_Elements %>%
-      filter(str_detect(Aesthetics, fixed(Elements, ignore_case = TRUE)))
-    
-    # Calculate the average value score if matches are found
-    if (nrow(matching_elements) > 0) {
-      mean(matching_elements$Value_Score)
-    } else {
-      NA_real_
-    }
+    split_tags <- str_split(Aesthetics, "/")[[1]]
+    matches <- Voting_Elements %>% filter(Elements %in% split_tags)
+    if (nrow(matches) > 0) mean(matches$Value_Score) else NA_real_
   })
 
 # Add Final_Score column using Can_Artist
@@ -903,9 +876,6 @@ Field_Time <- Voting_Options %>%
   filter(is.na(Episode) | Episode == 0)%>%
   select(-Aesthetic_Used_lower)%>%
   filter(Can_Artist_Remaining >= 6)
-
-
-
 
 
 
