@@ -16,7 +16,13 @@ Voting <- read_csv("~/Library/Mobile Documents/com~apple~CloudDocs/1:3/I:III_Dat
 
 
 
-#Update SCORESS 
+#
+#
+#
+####### update SCORESS
+#
+#
+#
 
 
 # Initialize Voting_Elements with elements and default scores
@@ -80,7 +86,7 @@ for (j in seq_along(aesthetics_lists)) {
       formatted_date <- format(Sys.Date(), "%d-%m-%Y")
       
       # Calculate weeks difference
-      weeks_difference <- as.numeric(difftime(formatted_date, dmy(row$Last_Voted), units = "weeks"))
+      weeks_difference <- as.numeric(difftime(Sys.Date(), dmy(row$Last_Voted), units = "weeks"))
       
       # Multiplier logic
       multiplier <- get_multiplier(row$Episode, weeks_difference)
@@ -102,29 +108,29 @@ Voting_Elements$Value_Score <- temp_scores
 # Output the updated Voting_Elements
 print(Voting_Elements)
 
+
+
 # Add Score column to Voting_Options
 Voting_Options <- Voting_Options %>%
   rowwise() %>%
   mutate(Score = {
-    # Find matching elements
-    matching_elements <- Voting_Elements %>%
-      filter(str_detect(Aesthetics, fixed(Elements, ignore_case = TRUE)))
-    
-    # Calculate the average value score if matches are found
-    if (nrow(matching_elements) > 0) {
-      mean(matching_elements$Value_Score)
-    } else {
-      NA_real_
-    }
+    split_tags <- str_split(Aesthetics, "/")[[1]]
+    matches <- Voting_Elements %>% filter(Elements %in% split_tags)
+    if (nrow(matches) > 0) mean(matches$Value_Score) else NA_real_
   })
+
+
 
 # Add the Final_Score column with conditional logic
 Voting_Options <- Voting_Options %>%
-  mutate(Score = if_else(Can_Artist_Remaining >= 10, Score * 1, Score * 0))
+  mutate(Score = if_else(Can_Artist_Remaining >= 8, Score * 1, Score * 0))
+
 
 # Perform a left join
 Voting_Options <- Voting_Options %>%
   left_join(Voting, by = c("Aesthetics" = "Aesthetic_Used"))
+
+
 
 print(Voting_Options)
 
